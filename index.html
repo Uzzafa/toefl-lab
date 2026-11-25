@@ -1,11 +1,19 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TOEFL LAB — latihan ITP &amp; iBT 2026</title>
 <link rel="stylesheet" href="css/styles.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📘</text></svg>">
+<script>
+  /* set tema sebelum paint, biar gak kedip */
+  try {
+    var t = localStorage.getItem("toeflLab.theme");
+    if (!t) t = (window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", t);
+  } catch (e) {}
+</script>
 </head>
 <body>
 
@@ -15,12 +23,14 @@
     <button data-go="home" class="on">Latihan</button>
     <button data-go="stats">Progres</button>
     <button data-go="guide">Materi</button>
+    <button id="themeBtn" class="themebtn" title="Ganti tema terang/gelap">☀️</button>
   </nav>
 </header>
 
 <main class="wrap" id="app"></main>
 
 <script src="js/questions.js"></script>
+<script src="js/questions-more.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

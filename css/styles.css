@@ -215,10 +215,69 @@ audio{width:100%;margin-top:10px;filter:invert(.92) hue-rotate(180deg)}
 .hint{font-size:12.5px;color:var(--tx3);margin-top:10px;line-height:1.6}
 .empty{text-align:center;color:var(--tx3);padding:60px 20px}
 .streak{font-size:12px;color:var(--tx3);margin-left:auto}
+/* ---------- theme toggle ---------- */
+.themebtn{
+  width:34px;height:34px;border-radius:8px;display:grid;place-items:center;
+  font-size:15px;line-height:1;border:1px solid var(--line);background:var(--bg3);
+  transition:.15s;padding:0;
+}
+.themebtn:hover{border-color:var(--acc);transform:rotate(15deg)}
+
+/* ---------- simulation ---------- */
+.tag.sim{color:#f0a868}
+.card.sim{
+  background:linear-gradient(180deg,rgba(79,157,255,.10),var(--bg3));
+  border-color:rgba(79,157,255,.38);
+}
+.card.sim:hover{border-color:var(--acc);box-shadow:0 8px 30px rgba(79,157,255,.18)}
+.simnote{
+  font-size:12.5px;color:var(--warn);
+  background:rgba(210,153,34,.10);border:1px solid rgba(210,153,34,.32);
+  border-radius:8px;padding:9px 13px;margin-bottom:16px;line-height:1.55;
+}
+
+/* ---------- LIGHT THEME ---------- */
+html[data-theme="light"]{
+  --bg:#f7f8fa; --bg2:#ffffff; --bg3:#f1f4f8;
+  --line:#e1e6ec; --line2:#c9d2dc;
+  --tx:#0f151c; --tx2:#48535f; --tx3:#6b7683;
+  --acc:#0969da; --acc2:#0969da;
+  --ok:#1a7f37; --okbg:rgba(26,127,55,.09);
+  --bad:#cf222e; --badbg:rgba(207,34,46,.08);
+  --warn:#9a6700;
+}
+html[data-theme="light"] body{
+  background:radial-gradient(1200px 600px at 20% -10%,#e6eefc 0%,var(--bg) 55%) fixed;
+}
+html[data-theme="light"] .topbar{background:rgba(247,248,250,.85)}
+html[data-theme="light"] .card{background:linear-gradient(180deg,#fff,#f6f9fd)}
+html[data-theme="light"] .card:hover{box-shadow:0 8px 24px rgba(16,32,56,.10)}
+html[data-theme="light"] .card.sim{background:linear-gradient(180deg,rgba(9,105,218,.07),#fff)}
+html[data-theme="light"] .choice:hover:not(.locked){background:#eaf2fe}
+html[data-theme="light"] .choice.pick{background:#dbeafe}
+html[data-theme="light"] .choice.good{background:#e6f6ea}
+html[data-theme="light"] .choice.bad{background:#fdeaea}
+html[data-theme="light"] .answerline .tok{background:#eaf2fe}
+html[data-theme="light"] .sentence .part.sel{background:#dbeafe}
+html[data-theme="light"] .passage{color:#28323d;background:#f6f9fd}
+html[data-theme="light"] .btn:hover{background:#eef2f7}
+html[data-theme="light"] .btn.ghost:hover{background:#eef2f7}
+html[data-theme="light"] .fb.ok{color:#14532d}
+html[data-theme="light"] .fb.no{color:#7f1d1d}
+html[data-theme="light"] .fb b{color:#000}
+html[data-theme="light"] audio{filter:none}
+html[data-theme="light"] .rec{background:#fdeaea;border-color:#f0b4b0;color:#a4201b}
+html[data-theme="light"] .rec.on{background:#e5484d;color:#fff}
+html[data-theme="light"] .tag.sim{color:#b45309}
+html[data-theme="light"] .card .tag.itp{color:#b45309}
+html[data-theme="light"] .card .tag.ibt{color:#6d3fc4}
+html[data-theme="light"] .card .tag.core{color:#0f766e}
+
 @media(max-width:640px){
   .wrap{padding:18px 14px 60px}
   .hero h1{font-size:21px}
   .score-hero .big{font-size:44px}
   .topbar{padding:12px 14px}
   .nav button{padding:6px 9px;font-size:12px}
+  .themebtn{width:30px;height:30px;font-size:13px}
 }
