@@ -311,6 +311,26 @@ html[data-theme="light"] .card .tag.core{color:#0f766e}
 }
 .minibtn:hover{background:var(--acc)}
 
+/* ---------- iBT: Complete the Words ---------- */
+.passage.doc{
+  font-family:ui-monospace,"Consolas","Courier New",monospace;
+  white-space:pre-wrap;font-size:13px;line-height:1.7;
+}
+.ctwtext{font-size:15px;line-height:2.5;color:var(--tx)}
+.ctwwrap{display:inline-block;white-space:nowrap;margin:0 2px}
+.ctwshow{font-family:ui-monospace,"Consolas",monospace;font-weight:700}
+.ctwin{
+  font-family:ui-monospace,"Consolas",monospace;font-weight:700;font-size:15px;
+  background:var(--bg3);border:0;border-bottom:2px solid var(--acc);
+  color:var(--acc);text-align:left;padding:0 4px;border-radius:3px 3px 0 0;
+  min-width:44px;
+}
+.ctwin:focus{outline:none;background:#16233c}
+.ctwin.ctw-ok{color:var(--ok);border-bottom-color:var(--ok);background:var(--okbg)}
+.ctwin.ctw-no{color:var(--bad);border-bottom-color:var(--bad);background:var(--badbg)}
+.ctwrest{display:none}
+html[data-theme="light"] .ctwin:focus{background:#eaf2fe}
+
 @media(max-width:640px){
   .wrap{padding:18px 14px 60px}
   .hero h1{font-size:21px}

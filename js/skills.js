@@ -40,7 +40,10 @@ window.SKILLS = [
   {id:"ibt-email", group:"iBT 2026", name:"Write an Email",            ref:"Writing", desc:"Email situasional kampus. Wajib mencakup semua poin, sapaan & penutup benar."},
   {id:"ibt-disc",  group:"iBT 2026", name:"Academic Discussion",       ref:"Writing", desc:"Tanggapi post profesor + 2 siswa, 100–150 kata, sebut minimal satu siswa."},
   {id:"ibt-repeat",group:"iBT 2026", name:"Listen and Repeat",         ref:"Speaking", desc:"Ulangi kalimat persis. Menguji pronunciation, stress, dan memori jangka pendek."},
-  {id:"ibt-inter", group:"iBT 2026", name:"Take an Interview",         ref:"Speaking", desc:"Jawab spontan 45 detik. Struktur: posisi → alasan → contoh."}
+  {id:"ibt-inter", group:"iBT 2026", name:"Take an Interview",         ref:"Speaking", desc:"Jawab spontan 45 detik. Struktur: posisi → alasan → contoh."},
+  {id:"ibt-ctw",   group:"iBT 2026", name:"Complete the Words",        ref:"Reading",  desc:"Lengkapi huruf yang hilang di paragraf akademik. 10 gap per teks, setengah kata sudah ditampilkan."},
+  {id:"ibt-daily", group:"iBT 2026", name:"Read in Daily Life",        ref:"Reading",  desc:"Teks pendek sehari-hari: notice, chat, struk, jadwal. Soal main purpose, detail, dan implied meaning."},
+  {id:"ibt-resp",  group:"iBT 2026", name:"Listen and Choose a Response", ref:"Listening", desc:"Dengar satu kalimat, pilih respons paling tepat. Menguji pemahaman implikasi + kesopanan sosial."}
 ];
 
 /* Tag per soal. Index-aligned dengan array di questions.js + questions-more.js
@@ -48,7 +51,12 @@ window.SKILLS = [
 window.SKILL_TAGS = {
   structure: [
     "sva","reduced","inversion","sva","clause","compsubj","formusage","reduced","compsubj","prep",
-    "clause","inversion","clause","prep","sva","clause","reduced","verbform","verbform","verbform"
+    "clause","inversion","clause","prep","sva","clause","reduced","verbform","verbform","verbform",
+    /* +11 dari questions-fill.js : 5 reduced, 6 inversion */
+    "reduced","reduced","reduced","reduced","reduced",
+    "inversion","inversion","inversion","inversion","inversion","inversion",
+    /* +9 dari questions-fill2.js : 1 clause, 2 verbform, 3 compsubj, 3 formusage */
+    "clause","verbform","verbform","compsubj","compsubj","compsubj","formusage","formusage","formusage"
   ],
   written: [
     "sva","sva","prep","sva","sva","sva","prep","prep","formusage","verbform",
@@ -58,16 +66,32 @@ window.SKILL_TAGS = {
   listeningA: [
     "l-infer","l-infer","l-infer","l-infer","l-attitude","l-meaning","l-infer","l-suggest","l-predict","l-infer",
     "l-predict","l-meaning","l-infer","l-suggest","l-meaning","l-infer","l-meaning","l-infer","l-suggest","l-infer",
-    "l-infer","l-infer","l-suggest","l-attitude","l-predict","l-meaning","l-infer","l-infer","l-suggest","l-infer"
+    "l-infer","l-infer","l-suggest","l-attitude","l-predict","l-meaning","l-infer","l-infer","l-suggest","l-infer",
+    /* +10 dari questions-fill.js : 5 prediction, 5 attitude */
+    "l-predict","l-predict","l-predict","l-predict","l-predict",
+    "l-attitude","l-attitude","l-attitude","l-attitude","l-attitude",
+    /* +6 dari questions-fill2.js : 3 suggestion, 3 meaning */
+    "l-suggest","l-suggest","l-suggest","l-meaning","l-meaning","l-meaning"
   ],
-  /* per passage, 10 soal tiap passage. Urutan passage:
-     Great Dying, Sleep, Urban Trees, Paper Money, Magnetoreception */
-  reading: [
-    "r-main","r-detail","r-vocab","r-detail","r-infer","r-purpose","r-detail","r-vocab","r-except","r-detail",
-    "r-infer","r-vocab","r-detail","r-purpose","r-infer","r-vocab","r-purpose","r-detail","r-purpose","r-infer",
-    "r-main","r-vocab","r-detail","r-detail","r-tone","r-vocab","r-purpose","r-purpose","r-detail","r-infer",
-    "r-detail","r-detail","r-vocab","r-detail","r-detail","r-detail","r-vocab","r-detail","r-infer","r-main",
-    "r-main","r-purpose","r-vocab","r-detail","r-detail","r-detail","r-vocab","r-detail","r-detail","r-infer"
+  /* per passage — satu array per passage, urut sesuai qs.
+     Urutan passage: Great Dying, Sleep, Urban Trees, Paper Money, Magnetoreception.
+     Pakai struktur bersarang supaya aman kalau jumlah soal per passage beda. */
+  readingGroups: [
+    /* 0 Great Dying (15) */
+    ["r-main","r-detail","r-vocab","r-detail","r-infer","r-purpose","r-detail","r-vocab","r-except","r-detail",
+     "r-except","r-except","r-tone","r-main","r-infer"],
+    /* 1 Sleep and Memory (14) */
+    ["r-infer","r-vocab","r-detail","r-purpose","r-infer","r-vocab","r-purpose","r-detail","r-purpose","r-infer",
+     "r-except","r-except","r-tone","r-main"],
+    /* 2 Urban Trees (14) */
+    ["r-main","r-vocab","r-detail","r-detail","r-tone","r-vocab","r-purpose","r-purpose","r-detail","r-infer",
+     "r-except","r-except","r-tone","r-main"],
+    /* 3 Paper Money (13) */
+    ["r-detail","r-detail","r-vocab","r-detail","r-detail","r-detail","r-vocab","r-detail","r-infer","r-main",
+     "r-except","r-tone","r-tone"],
+    /* 4 Magnetoreception (13) */
+    ["r-main","r-purpose","r-vocab","r-detail","r-detail","r-detail","r-vocab","r-detail","r-detail","r-infer",
+     "r-tone","r-tone","r-main"]
   ],
   /* listening set -> tag per pertanyaan, key = title */
   listeningSets: {
@@ -76,6 +100,8 @@ window.SKILL_TAGS = {
     "Campus conversation - advising":["l-detail","l-detail","l-detail"],
     "Academic talk - art history":   ["l-main","l-detail","l-detail"],
     "Part B - Housing office":       ["l-detail","l-detail","l-detail","l-infer","l-detail"],
-    "Part C - Geology":              ["l-main","l-detail","r-purpose","l-main","l-detail"]
+    "Part C - Geology":              ["l-main","l-detail","r-purpose","l-main","l-detail"],
+    "Part C - Psychology":           ["l-main","l-detail","l-detail","l-main"],
+    "Part B - Library fines":        ["l-main","l-detail","l-detail","l-infer"]
   }
 };

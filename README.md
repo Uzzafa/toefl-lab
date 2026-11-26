@@ -46,10 +46,10 @@ Estimasi skor ITP dihitung dari konversi linear — **bukan skor resmi ETS**, ka
 
 Tab **Materi** memuat daftar lengkap apa yang diuji, dipetakan ke skill resmi:
 
-- **Grammar** — TOEFL ITP Level 1 Structure & Written Expression **Skill 1–60**, diringkas jadi 8 grup drill (SVA, preposition, clause, reduced clause, inversion, verb form, comparative/subjunctive, form & usage)
+- **Grammar** — TOEFL ITP Level 1 Structure & Written Expression **Skill 1–60**, diringkas jadi 8 grup drill (SVA, preposition, clause, reduced clause, inversion, verb form, comparative/subjunctive, form & usage) — tiap grup **minimal 8 soal**
 - **Listening** — Part A (inference, suggestion, meaning/idiom, prediction, attitude) + Part B/C (main idea, detail)
 - **Reading** — main idea, stated detail, inference, vocabulary in context, rhetorical purpose, negative fact, author's tone
-- **iBT 2026** — Build a Sentence, Write an Email, Academic Discussion, Listen and Repeat, Take an Interview
+- **iBT 2026** — 8 task type: Build a Sentence, Write an Email, Academic Discussion, Listen and Repeat, Take an Interview, **Complete the Words**, **Read in Daily Life**, **Listen and Choose a Response**
 
 Tiap baris punya tombol **Drill** sendiri. Di layar latihan ada penghitung **✓ benar / ✗ salah** yang jalan langsung, plus skor akhir di akhir sesi.
 
@@ -68,7 +68,10 @@ Tiap baris punya tombol **Drill** sendiri. Di layar latihan ada penghitung **✓
 | Build a Sentence | 8 | 12 | 10 mnt |
 | Write an Email | 2 | 5 | 12 mnt |
 | Academic Discussion | 2 | 4 | 12 mnt |
-| Speaking (Repeat + Interview) | 6 | 10 + 5 | 8 mnt |
+| Speaking (Repeat + Interview) | 6 | 10 + 8 | 8 mnt |
+| Complete the Words | 5 teks | 5 teks / 50 gap | 8 mnt |
+| Read in Daily Life | 2 teks | 4 teks / 12 soal | 8 mnt |
+| Listen and Choose a Response | 8 | 8 | 6 mnt |
 
 Soal diacak setiap sesi. Di mode latihan, jawaban salah langsung keluar penjelasannya.
 
@@ -90,6 +93,8 @@ index.html            shell + set tema sebelum paint
 css/styles.css        tema gelap/terang
 js/questions.js       bank soal inti
 js/questions-more.js  bank soal tambahan (dipakai untuk simulasi 140 soal)
+js/questions-fill.js  lapisan 2: isi skill tipis + 3 task type iBT baru
+js/questions-fill2.js lapisan 3: genapkan semua skill ke minimal 8 soal
 js/skills.js          taksonomi skill + tag per soal (index-aligned)
 js/app.js             logika app (merge data, drill, simulasi, skor, tema)
 serve.ps1             static server PowerShell (port 8100, ASCII+CRLF)

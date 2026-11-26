@@ -19,6 +19,7 @@
   /* ---------------- data merge ---------------- */
   var D = window.TOEFL || {};
   var M = window.TOEFL_MORE || {};
+  var F = window.TOEFL_FILL || {};
 
   D.listeningA = arr(D.listeningA).concat(arr(M.listeningA));
   D.written = arr(D.written).concat(arr(M.written));
@@ -26,6 +27,31 @@
   D.reading = arr(D.reading).concat(arr(M.reading));
   D.speakRepeat = arr(D.speakRepeat).concat(arr(M.speakRepeat));
   arr(M.readingAdd).forEach(function (add) {
+    var p = D.reading.filter(function (x) { return x.title === add.title; })[0];
+    if (p) p.qs = p.qs.concat(add.qs);
+  });
+
+  /* lapisan kedua (questions-fill.js) */
+  D.structure = arr(D.structure).concat(arr(F.structure));
+  D.listeningA = D.listeningA.concat(arr(F.listeningA));
+  D.reading = D.reading.concat(arr(F.reading));
+  arr(F.readingAdd).forEach(function (add) {
+    var p = D.reading.filter(function (x) { return x.title === add.title; })[0];
+    if (p) p.qs = p.qs.concat(add.qs);
+  });
+  D.ctw = arr(F.ctw);
+  D.daily = arr(F.daily);
+  D.response = arr(F.response);
+
+  /* lapisan ketiga (questions-fill2.js) */
+  var F2 = window.TOEFL_FILL2 || {};
+  D.structure = D.structure.concat(arr(F2.structure));
+  D.listeningA = D.listeningA.concat(arr(F2.listeningA));
+  D.listeningBC = D.listeningBC.concat(arr(F2.listeningSets));
+  D.email = arr(D.email).concat(arr(F2.email));
+  D.discussion = arr(D.discussion).concat(arr(F2.discussion));
+  D.speakInter = arr(D.speakInter).concat(arr(F2.speakInter));
+  arr(F2.readingAdd).forEach(function (add) {
     var p = D.reading.filter(function (x) { return x.title === add.title; })[0];
     if (p) p.qs = p.qs.concat(add.qs);
   });
@@ -46,10 +72,11 @@
   push(D.written, TAGS.written, err);
   push(D.listeningA, TAGS.listeningA, listenA);
   D.reading.forEach(function (p, pi) {
+    var grp = (TAGS.readingGroups && TAGS.readingGroups[pi]) || [];
     p.qs.forEach(function (q, qi) {
       POOL.push({
         kind: "mc", passage: { title: p.title, text: p.text }, stem: q.q, choices: q.c, answer: q.a, explain: q.x,
-        skill: (TAGS.reading && TAGS.reading[pi * 10 + qi]) || "r-detail"
+        skill: grp[qi] || "r-detail"
       });
     });
   });
@@ -67,6 +94,23 @@
   D.discussion.forEach(function (d) { var it = discQ(d); it.skill = "ibt-disc"; POOL.push(it); });
   D.speakRepeat.forEach(function (r) { var it = repeatQ(r); it.skill = "ibt-repeat"; POOL.push(it); });
   D.speakInter.forEach(function (q) { var it = interQ(q); it.skill = "ibt-inter"; POOL.push(it); });
+
+  /* iBT task type baru */
+  D.ctw.forEach(function (c) { POOL.push({ kind: "ctw", title: c.title, text: c.text, stem: c.title, explain: "Teks: " + c.title, skill: "ibt-ctw" }); });
+  D.daily.forEach(function (d) {
+    d.qs.forEach(function (q) {
+      POOL.push({
+        kind: "mc", doc: true, passage: { title: d.label, text: d.text },
+        stem: q.q, choices: q.c, answer: q.a, explain: q.x, skill: "ibt-daily"
+      });
+    });
+  });
+  D.response.forEach(function (r) {
+    POOL.push({
+      kind: "mc", audio: [["Speaker", r.say]], audioTitle: "Listen and Choose a Response",
+      stem: r.q, choices: r.c, answer: r.a, explain: r.x, skill: "ibt-resp"
+    });
+  });
 
   function poolOf(id) { return POOL.filter(function (x) { return x.skill === id; }); }
 
@@ -116,12 +160,15 @@
     written:     { name: "Written Expression", tag: "core", tagLabel: "Core · ITP + Prediction", desc: "Temukan bagian yang salah dari 4 pilihan bergaris bawah.", time: 10 * 60, build: function () { return shuffle(D.written).slice(0, 10).map(err); } },
     listeningA:  { name: "Listening — Short Dialogue", tag: "itp", tagLabel: "ITP Part A", desc: "Dialog pendek + pertanyaan implikasi. Diputar pakai text-to-speech browser.", time: 10 * 60, build: function () { return shuffle(D.listeningA).slice(0, 8).map(listenA); } },
     listeningBC: { name: "Listening — Talks & Announcements", tag: "itp", tagLabel: "ITP Part B/C", desc: "Percakapan panjang, pengumuman kampus, dan mini-lecture.", time: 14 * 60, build: function () { return shuffle(D.listeningBC).slice(0, 3).map(listenSet).reduce(function (a, b) { return a.concat(b); }, []); } },
-    reading:     { name: "Reading Comprehension", tag: "core", tagLabel: "Core · semua jenis", desc: "Passage akademik + soal main idea, detail, inference, vocabulary.", time: 16 * 60, build: function () { return shuffle(D.reading).slice(0, 2).map(readPass).reduce(function (a, b) { return a.concat(b); }, []); } },
+    reading:     { name: "Reading Comprehension", tag: "core", tagLabel: "Core · semua jenis", desc: "Passage akademik + soal main idea, detail, inference, vocabulary.", time: 16 * 60, build: function () { return shuffle(D.reading).slice(0, 2).map(function (p) { return readPass({ title: p.title, text: p.text, qs: shuffle(p.qs).slice(0, 10) }); }).reduce(function (a, b) { return a.concat(b); }, []); } },
     vocab:       { name: "Vocabulary (AWL)", tag: "core", tagLabel: "Core · semua jenis", desc: "40 kata Academic Word List paling sering muncul. Arti + contoh kalimat.", time: 0, build: function () { return shuffle(D.vocab).slice(0, 15).map(vocabQ); } },
     build:       { name: "Build a Sentence", tag: "ibt", tagLabel: "iBT 2026 · Writing", desc: "Susun kata acak jadi kalimat benar — task baru iBT 2026.", time: 10 * 60, build: function () { return shuffle(D.build).slice(0, 8).map(buildQ); } },
     email:       { name: "Write an Email", tag: "ibt", tagLabel: "iBT 2026 · Writing", desc: "Tulis email situasional. Dinilai dengan checklist + word count.", time: 12 * 60, build: function () { return shuffle(D.email).slice(0, 2).map(emailQ); } },
     discussion:  { name: "Academic Discussion", tag: "ibt", tagLabel: "iBT 2026 · Writing", desc: "Tanggapi post profesor + 2 siswa dalam 100–150 kata.", time: 12 * 60, build: function () { return shuffle(D.discussion).slice(0, 2).map(discQ); } },
-    speak:       { name: "Speaking — Repeat & Interview", tag: "ibt", tagLabel: "iBT 2026 · Speaking", desc: "Listen & Repeat + interview. Rekam suara sendiri, nilai sendiri.", time: 8 * 60, build: function () { return shuffle(D.speakRepeat).slice(0, 4).map(repeatQ).concat(shuffle(D.speakInter).slice(0, 2).map(interQ)); } }
+    speak:       { name: "Speaking — Repeat & Interview", tag: "ibt", tagLabel: "iBT 2026 · Speaking", desc: "Listen & Repeat + interview. Rekam suara sendiri, nilai sendiri.", time: 8 * 60, build: function () { return shuffle(D.speakRepeat).slice(0, 4).map(repeatQ).concat(shuffle(D.speakInter).slice(0, 2).map(interQ)); } },
+    ctw:         { name: "Complete the Words", tag: "ibt", tagLabel: "iBT 2026 · Reading", desc: "Lengkapi huruf yang hilang di paragraf akademik. 10 gap per teks.", time: 8 * 60, build: function () { return shuffle(D.ctw).map(function (c) { return { kind: "ctw", title: c.title, text: c.text, skill: "ibt-ctw" }; }); } },
+    daily:       { name: "Read in Daily Life", tag: "ibt", tagLabel: "iBT 2026 · Reading", desc: "Notice, chat, struk, jadwal — teks pendek sehari-hari.", time: 8 * 60, build: function () { return shuffle(D.daily).slice(0, 2).map(function (d) { return d.qs.map(function (q) { return { kind: "mc", doc: true, passage: { title: d.label, text: d.text }, stem: q.q, choices: q.c, answer: q.a, explain: q.x, skill: "ibt-daily" }; }); }).reduce(function (a, b) { return a.concat(b); }, []); } },
+    response:    { name: "Listen and Choose a Response", tag: "ibt", tagLabel: "iBT 2026 · Listening", desc: "Dengar satu kalimat, pilih respons paling tepat.", time: 6 * 60, build: function () { return shuffle(D.response).slice(0, 8).map(function (r) { return { kind: "mc", audio: [["Speaker", r.say]], audioTitle: "Listen and Choose a Response", stem: r.q, choices: r.c, answer: r.a, explain: r.x, skill: "ibt-resp" }; }); } }
   };
 
   /* ---------------- simulations ---------------- */
@@ -131,7 +178,9 @@
     var partC = PART_C.map(listenSet).reduce(function (a, b) { return a.concat(b); }, []);
     var listening = partA.concat(partB).concat(partC);
     var structure = shuffle(D.structure).slice(0, 15).map(mc).concat(shuffle(D.written).slice(0, 25).map(err));
-    var reading = shuffle(D.reading).slice(0, 5).map(readPass).reduce(function (a, b) { return a.concat(b); }, []);
+    var reading = shuffle(D.reading).slice(0, 5).map(function (p) {
+      return readPass({ title: p.title, text: p.text, qs: shuffle(p.qs).slice(0, 10) });
+    }).reduce(function (a, b) { return a.concat(b); }, []);
     return {
       name: "ITP Full Simulation",
       key: "sim-itp",
@@ -233,7 +282,8 @@
       card("listeningA") + card("listeningBC") + "</div>";
 
     html += '<div class="sec-title">Khusus iBT 2026</div><div class="grid">' +
-      card("build") + card("email") + card("discussion") + card("speak") + "</div>";
+      card("build") + card("email") + card("discussion") + card("speak") +
+      card("ctw") + card("daily") + card("response") + "</div>";
 
     if (h.length) {
       html += '<div class="sec-title">Sesi terakhir</div><table><tr><th>Latihan</th><th>Hasil</th><th>Waktu</th></tr>';
@@ -361,8 +411,11 @@
     if (S.sim) h += '<div class="simnote">Mode ujian — benar/salah tidak ditampilkan sampai selesai. Jawaban masih bisa diganti sebelum tekan Lanjut.</div>';
 
     if (it.passage) {
-      h += '<div class="passage"><h4>' + esc(it.passage.title) + "</h4>" +
-        it.passage.text.split("\n\n").map(function (p) { return "<p>" + esc(p) + "</p>"; }).join("") + "</div>";
+      var pcls = it.doc ? "passage doc" : "passage";
+      var body = it.doc
+        ? esc(it.passage.text)
+        : it.passage.text.split("\n\n").map(function (p) { return "<p>" + esc(p) + "</p>"; }).join("");
+      h += '<div class="' + pcls + '"><h4>' + esc(it.passage.title) + "</h4>" + body + "</div>";
     }
     if (it.audio) h += audioBlock(it);
 
@@ -371,6 +424,7 @@
     else if (it.kind === "build") h += buildBlock(it);
     else if (it.kind === "write") h += writeBlock(it);
     else if (it.kind === "speak") h += speakBlock(it);
+    else if (it.kind === "ctw") h += ctwBlock(it);
 
     h += '<div class="fb" id="fb"></div>';
     h += '<div class="actions"><div class="spacer"></div>' +
@@ -454,6 +508,22 @@
       '<div class="actions" style="margin-top:16px"><button class="btn primary" id="done">Selesai</button></div></div>';
   }
 
+  function ctwBlock(it) {
+    var body = String(it.text).replace(/\{\{(\w+)\}\}/g, function (m, w) {
+      var keep = Math.ceil(w.length / 2);
+      var blanks = w.length - keep;
+      return '<span class="ctwwrap"><span class="ctwshow">' + w.slice(0, keep) + "</span>" +
+        '<input class="ctwin" data-w="' + w + '" size="' + Math.max(2, blanks) + '" maxlength="' + (blanks + 2) +
+        '" autocomplete="off" autocapitalize="off" spellcheck="false">' +
+        '<span class="ctwrest">' + new Array(blanks + 1).join("_") + "</span></span>";
+    });
+    var total = (String(it.text).match(/\{\{\w+\}\}/g) || []).length;
+    return '<div class="qbox"><div class="stem">Lengkapi huruf yang hilang — setengah awal tiap kata sudah ditampilkan.</div>' +
+      '<div class="ctwtext" id="ctwtext">' + body + "</div>" +
+      '<div class="actions" style="margin-top:16px"><button class="btn primary" id="check">Cek jawaban</button>' +
+      '<span class="plays" id="ctwcount">0 / ' + total + " terisi</span></div></div>";
+  }
+
   /* ---------------- wiring ---------------- */
   var built = [];
 
@@ -513,6 +583,8 @@
       wireWrite(it);
     } else if (it.kind === "speak") {
       wireSpeak(it);
+    } else if (it.kind === "ctw") {
+      wireCtw(it);
     }
 
     var nx2 = document.getElementById("next");
@@ -696,6 +768,36 @@
       n.textContent = isLast() ? "Lihat hasil →" : "Lanjut →";
       S.locked = true;
     };
+  }
+
+  function wireCtw(it) {
+    var inputs = Array.prototype.slice.call(document.querySelectorAll(".ctwin"));
+    var cnt = document.getElementById("ctwcount");
+    var total = inputs.length;
+    function refresh() {
+      var filled = inputs.filter(function (i) { return i.value.trim(); }).length;
+      if (cnt) cnt.textContent = filled + " / " + total + " terisi";
+    }
+    inputs.forEach(function (i) { i.addEventListener("input", refresh); });
+    document.getElementById("check").onclick = function () {
+      if (S.locked) return;
+      var correct = 0;
+      inputs.forEach(function (i) {
+        var want = (i.dataset.w || "").toLowerCase();
+        var ok = i.value.trim().toLowerCase() === want;
+        i.classList.add(ok ? "ctw-ok" : "ctw-no");
+        if (ok) correct++;
+      });
+      var pass = correct >= Math.ceil(total * 0.8);
+      S.log.push({ ok: pass, kind: "ctw", item: it });
+      updateTally();
+      showFB(pass, correct + " / " + total + " benar" + (pass ? " — lolos" : " — belum lolos"),
+        (pass ? "Ambang 80%. " : "Ambang 80%. ") + "Kunci: <b>" +
+        inputs.map(function (i) { return i.dataset.w; }).join(", ") + "</b>");
+      document.getElementById("check").disabled = true;
+      lockNext();
+    };
+    if (inputs[0]) inputs[0].focus();
   }
 
   function nextQ() {
