@@ -42,6 +42,19 @@ Jumlah soal dan waktu mengikuti spesifikasi ETS. Mode ujian:
 
 Estimasi skor ITP dihitung dari konversi linear — **bukan skor resmi ETS**, karena tabel equating resmi tidak dipublikasikan.
 
+## Peta materi & drill per skill
+
+Tab **Materi** memuat daftar lengkap apa yang diuji, dipetakan ke skill resmi:
+
+- **Grammar** — TOEFL ITP Level 1 Structure & Written Expression **Skill 1–60**, diringkas jadi 8 grup drill (SVA, preposition, clause, reduced clause, inversion, verb form, comparative/subjunctive, form & usage)
+- **Listening** — Part A (inference, suggestion, meaning/idiom, prediction, attitude) + Part B/C (main idea, detail)
+- **Reading** — main idea, stated detail, inference, vocabulary in context, rhetorical purpose, negative fact, author's tone
+- **iBT 2026** — Build a Sentence, Write an Email, Academic Discussion, Listen and Repeat, Take an Interview
+
+Tiap baris punya tombol **Drill** sendiri. Di layar latihan ada penghitung **✓ benar / ✗ salah** yang jalan langsung, plus skor akhir di akhir sesi.
+
+> **Soal bukan salinan ETS.** Bank soal resmi (ITP Practice Tests, iBT Practice Test) ber-copyright dan tidak boleh disebar ulang — apalagi di repo publik. Semua 180 soal di sini ditulis sendiri, lalu dipetakan ke skill resmi di atas. Item type & struktur tesnya yang mengikuti ETS, bukan teks soalnya.
+
 ## Latihan per bagian
 
 | Kategori | Soal/sesi | Bank | Timer |
@@ -77,9 +90,10 @@ index.html            shell + set tema sebelum paint
 css/styles.css        tema gelap/terang
 js/questions.js       bank soal inti
 js/questions-more.js  bank soal tambahan (dipakai untuk simulasi 140 soal)
+js/skills.js          taksonomi skill + tag per soal (index-aligned)
 js/app.js             logika app (merge data, drill, simulasi, skor, tema)
 serve.ps1             static server PowerShell (port 8100, ASCII+CRLF)
 PLAY.bat              launcher
 ```
 
-Nambah soal: tambah objek ke array yang sesuai di `js/questions.js` atau `js/questions-more.js`. Formatnya ada di komentar paling atas masing-masing file.
+Nambah soal: tambah objek ke array yang sesuai di `js/questions.js` atau `js/questions-more.js`, **lalu tambah satu tag skill di `js/skills.js` pada posisi index yang sama**. Tanpa tag, soal tetap jalan tapi masuk grup "misc" dan tidak muncul di drill per materi.

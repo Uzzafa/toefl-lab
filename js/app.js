@@ -30,6 +30,47 @@
     if (p) p.qs = p.qs.concat(add.qs);
   });
 
+  /* ---------------- skill tagging ---------------- */
+  var SK = window.SKILLS || [];
+  var TAGS = window.SKILL_TAGS || {};
+  var POOL = [];
+
+  function push(list, tags, factory) {
+    list.forEach(function (o, i) {
+      var it = factory(o);
+      it.skill = (tags && tags[i]) || "misc";
+      POOL.push(it);
+    });
+  }
+  push(D.structure, TAGS.structure, mc);
+  push(D.written, TAGS.written, err);
+  push(D.listeningA, TAGS.listeningA, listenA);
+  D.reading.forEach(function (p, pi) {
+    p.qs.forEach(function (q, qi) {
+      POOL.push({
+        kind: "mc", passage: { title: p.title, text: p.text }, stem: q.q, choices: q.c, answer: q.a, explain: q.x,
+        skill: (TAGS.reading && TAGS.reading[pi * 10 + qi]) || "r-detail"
+      });
+    });
+  });
+  D.listeningBC.forEach(function (set) {
+    var tg = (TAGS.listeningSets || {})[set.title] || [];
+    set.qs.forEach(function (q, qi) {
+      POOL.push({
+        kind: "mc", audio: set.spk, audioTitle: set.title, stem: q.q, choices: q.c, answer: q.a, explain: q.x,
+        skill: tg[qi] || "l-detail"
+      });
+    });
+  });
+  D.build.forEach(function (b) { var it = buildQ(b); it.skill = "ibt-build"; POOL.push(it); });
+  D.email.forEach(function (e) { var it = emailQ(e); it.skill = "ibt-email"; POOL.push(it); });
+  D.discussion.forEach(function (d) { var it = discQ(d); it.skill = "ibt-disc"; POOL.push(it); });
+  D.speakRepeat.forEach(function (r) { var it = repeatQ(r); it.skill = "ibt-repeat"; POOL.push(it); });
+  D.speakInter.forEach(function (q) { var it = interQ(q); it.skill = "ibt-inter"; POOL.push(it); });
+
+  function poolOf(id) { return POOL.filter(function (x) { return x.skill === id; }); }
+
+
   /* partisi listening untuk simulasi */
   var PART_B = [D.listeningBC[2], arr(M.listeningB)[0]].filter(Boolean);
   var PART_C = [D.listeningBC[1], D.listeningBC[3], arr(M.listeningC)[0]].filter(Boolean);
@@ -152,6 +193,14 @@
       "</div></button>";
   }
 
+  function skillChips(group) {
+    var list = SK.filter(function (s) { return s.group === group && poolOf(s.id).length; });
+    if (!list.length) return "";
+    return '<div class="chiprow">' + list.map(function (s) {
+      return '<button class="skillchip" data-skill="' + s.id + '">' + esc(s.name) + "<i>" + poolOf(s.id).length + "</i></button>";
+    }).join("") + "</div>";
+  }
+
   function renderHome() {
     var h = store().hist.slice(-5).reverse();
     var html = '<div class="hero"><h1>Siap latihan apa hari ini?</h1>' +
@@ -168,7 +217,16 @@
       '<div class="meta"><span><b>23</b> item</span><span><b>31</b> menit</span><span><b>2</b> section</span></div></button>' +
       "</div>";
 
-    html += '<div class="sec-title">Latihan per bagian — Structure &amp; Vocabulary</div><div class="grid">' +
+    html += '<div class="sec-title">Drill per materi — satu skill sekali klik</div>' +
+      '<div class="qbox" style="padding:16px 18px">' +
+      '<div class="chiphdr">Grammar · ITP Structure &amp; Written Expression</div>' + skillChips("Grammar") +
+      '<div class="chiphdr">Listening · ITP</div>' + skillChips("Listening") +
+      '<div class="chiphdr">Reading · ITP</div>' + skillChips("Reading") +
+      '<div class="chiphdr">iBT 2026</div>' + skillChips("iBT 2026") +
+      '<div class="hint" style="margin-top:12px">Angka kecil = jumlah soal di bank untuk skill itu. Soal diacak tiap sesi, jadi refresh = set berbeda.</div>' +
+      "</div>";
+
+    html += '<div class="sec-title">Latihan campur — Structure &amp; Vocabulary</div><div class="grid">' +
       card("structure") + card("written") + card("vocab") + card("reading") + "</div>";
 
     html += '<div class="sec-title">Listening (ITP / Prediction)</div><div class="grid">' +
@@ -188,6 +246,8 @@
   }
 
   app.addEventListener("click", function (e) {
+    var s = e.target.closest("[data-skill]");
+    if (s) return go("drill", "sk:" + s.dataset.skill);
     var b = e.target.closest("[data-start]");
     if (b) { go("drill", b.dataset.start); }
   });
@@ -196,6 +256,7 @@
   function startDrill(key) {
     if (key === "sim-itp") return startSim(buildITP());
     if (key === "sim-ibt") return startSim(buildIBT());
+    if (key.indexOf("sk:") === 0) return startSkill(key.slice(3));
     var c = CATS[key];
     if (!c) return go("home");
     S = { view: "drill", cat: key, name: c.name, items: c.build(), idx: 0, log: [], locked: false, timer: null, remain: c.time, started: Date.now(), saved: false, sim: false, sections: null, secIdx: -1 };
@@ -203,6 +264,24 @@
     if (S.remain > 0) startTimer();
     renderQ();
   }
+
+  function startSkill(id) {
+    var meta = SK.filter(function (s) { return s.id === id; })[0];
+    var pool = shuffle(poolOf(id));
+    if (!meta || !pool.length) return go("home");
+    var items = pool.slice(0, Math.min(pool.length, 10));
+    var n = items.length;
+    var mins = 0;
+    if (meta.group === "Grammar") mins = Math.max(5, Math.ceil(n * 1.2));
+    else if (meta.group === "Reading") mins = Math.ceil(n * 1.7);
+    else if (meta.group === "Listening") mins = Math.ceil(n * 1.4);
+    else if (meta.group === "iBT 2026") mins = Math.ceil(n * 1.5);
+    S = { view: "drill", cat: "sk:" + id, name: meta.name, items: items, idx: 0, log: [], locked: false, timer: null, remain: mins * 60, started: Date.now(), saved: false, sim: false, sections: null, secIdx: -1 };
+    setNav("drill");
+    if (S.remain > 0) startTimer();
+    renderQ();
+  }
+
 
   function startSim(cfg) {
     S = { view: "drill", cat: cfg.key, name: cfg.name, items: cfg.items, idx: 0, log: [], locked: false, timer: null, remain: 0, started: Date.now(), saved: false, sim: true, sections: cfg.sections, secIdx: -1 };
@@ -268,9 +347,14 @@
     var it = S.items[S.idx], n = S.items.length;
     if (!it) return finish(false);
 
+    var right = 0, wrong = 0;
+    S.log.forEach(function (x) { if (x.ok === true) right++; else if (x.ok === false) wrong++; });
+
     var h = '<div class="bar"><button class="btn ghost" id="quit">&larr; Keluar</button>' +
       '<span class="title">' + esc(S.sim ? S.sections[S.secIdx].name : S.name) + "</span>" +
-      '<div class="right"><span class="prog">' + (S.idx + 1) + " / " + n + "</span>" +
+      '<div class="right">' +
+      '<span class="tally" id="tally" title="benar / salah">' + tallyHtml(right, wrong) + "</span>" +
+      '<span class="prog">' + (S.idx + 1) + " / " + n + "</span>" +
       (S.remain > 0 ? '<span class="clock" id="clock">' + mmss(S.remain) + "</span>" : "") + "</div></div>" +
       '<div class="track"><i style="width:' + Math.round((S.idx / n) * 100) + '%"></i></div>';
 
@@ -437,6 +521,17 @@
 
   function isLast() { return S.idx === S.items.length - 1; }
 
+  function tallyHtml(r, w) {
+    return '<b class="t-ok">&#10003; ' + r + '</b><b class="t-bad">&#10007; ' + w + "</b>";
+  }
+  function updateTally() {
+    var el = document.getElementById("tally");
+    if (!el) return;
+    var r = 0, w = 0;
+    S.log.forEach(function (x) { if (x.ok === true) r++; else if (x.ok === false) w++; });
+    el.innerHTML = tallyHtml(r, w);
+  }
+
   function showFB(ok, title, body) {
     var fb = document.getElementById("fb");
     fb.className = "fb show " + (ok ? "ok" : "no");
@@ -456,6 +551,7 @@
     btns[i].classList.add(ok ? "good" : "bad");
     if (!ok) btns[it.answer].classList.add("good");
     S.log.push({ ok: ok, kind: "mc", item: it, chosen: i });
+    updateTally();
     showFB(ok, ok ? "Benar" : "Salah — jawaban: " + "ABCD"[it.answer], esc(it.explain));
     lockNext();
   }
@@ -467,6 +563,7 @@
     parts[i].classList.add(ok ? "good" : "bad");
     if (!ok) parts[it.answer].classList.add("good");
     S.log.push({ ok: ok, kind: "err", item: it, chosen: i });
+    updateTally();
     showFB(ok, ok ? "Benar" : "Salah — bagian " + it.parts[it.answer].l, esc(it.explain));
     lockNext();
   }
@@ -507,6 +604,7 @@
       var mine = built.join(" ").toLowerCase().replace(/[.,!?]/g, "");
       var ok = mine === it.ans.toLowerCase().replace(/[.,!?]/g, "");
       S.log.push({ ok: ok, kind: "build", item: it });
+      updateTally();
       showFB(ok, ok ? "Benar" : "Belum tepat", "Jawaban benar: <b>" + esc(it.ans) + "</b><br>" + esc(it.explain));
       document.getElementById("check").disabled = true;
       lockNext();
@@ -539,6 +637,7 @@
         var pct = Math.round(done / crit.length * 100);
         S.log = S.log.filter(function (x) { return x.kind !== "write"; });
         S.log.push({ ok: pct >= 80, kind: "write", self: true, pct: pct });
+        updateTally();
         var nx = document.getElementById("next"); nx.style.display = "";
         nx.textContent = isLast() ? "Lihat hasil →" : "Lanjut →";
         S.locked = true;
@@ -577,6 +676,7 @@
               var v = +b.dataset.rate;
               S.log = S.log.filter(function (x) { return x.kind !== "speak"; });
               S.log.push({ ok: v >= 4, kind: "speak", self: true, score: v });
+              updateTally();
               var n = document.getElementById("next"); n.style.display = "";
               n.textContent = isLast() ? "Lihat hasil →" : "Lanjut →";
               S.locked = true;
@@ -844,7 +944,34 @@
     ]}
   ];
   function renderGuide() {
-    var h = '<div class="hero"><h1>Materi ringkas</h1><p>Rangkuman apa yang diuji tiap jenis tes + pola yang paling sering keluar. Baca ini sebelum nge-drill.</p></div>';
+    var h = '<div class="hero"><h1>Materi &amp; peta skill</h1>' +
+      "<p>Daftar lengkap apa yang diuji, dipetakan ke skill resmi ETS. Tiap baris bisa langsung di-drill.</p></div>";
+
+    h += '<div class="simnote" style="color:var(--tx2);background:var(--bg3);border-color:var(--line)">' +
+      "Struktur daftar mengikuti <b>TOEFL ITP Level 1 — Structure &amp; Written Expression (Skill 1–60)</b> dan " +
+      "<b>task type resmi iBT 2026</b>. Semua soal di app ini <b>ditulis sendiri</b> dan dipetakan ke skill tersebut — " +
+      "bukan salinan soal ETS, karena bank soal resmi ber-copyright dan tidak boleh disebar ulang.</div>";
+
+    ["Grammar", "Listening", "Reading", "iBT 2026"].forEach(function (g) {
+      var list = SK.filter(function (s) { return s.group === g; });
+      if (!list.length) return;
+      var label = g === "Grammar" ? "Grammar · ITP Structure &amp; Written Expression (Skill 1–60)"
+        : g === "Listening" ? "Listening · ITP Part A / B / C"
+          : g === "Reading" ? "Reading · ITP"
+            : "iBT 2026 · task type resmi";
+      h += '<div class="sec-title">' + label + "</div>";
+      h += '<table class="skilltable"><tr><th>Skill</th><th>Ref</th><th>Bank</th><th></th></tr>';
+      list.forEach(function (s) {
+        var n = poolOf(s.id).length;
+        h += "<tr><td><b>" + esc(s.name) + "</b><div class='sdesc'>" + esc(s.desc) + "</div></td>" +
+          "<td class='ref'>" + esc(s.ref) + "</td>" +
+          "<td class='n'>" + (n || "—") + "</td>" +
+          "<td class='n'>" + (n ? '<button class="minibtn" data-skill="' + s.id + '">Drill</button>' : "") + "</td></tr>";
+      });
+      h += "</table>";
+    });
+
+    h += '<div class="sec-title">Pola &amp; strategi</div>';
     GUIDE.forEach(function (g) {
       h += '<div class="qbox" style="margin-bottom:12px"><h3 style="font-size:15px;margin-bottom:10px;color:var(--acc)">' + g.t + "</h3>" +
         '<ul style="margin-left:18px;color:var(--tx2);font-size:13.5px;line-height:1.75">' +
