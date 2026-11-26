@@ -44,7 +44,16 @@ Estimasi skor ITP dihitung dari konversi linear — **bukan skor resmi ETS**, ka
 
 ## Peta materi & drill per skill
 
-Tab **Materi** memuat daftar lengkap apa yang diuji, dipetakan ke skill resmi:
+Tab **Materi** sekarang berisi **teori lengkap**, bukan cuma daftar:
+
+1. **Kamus istilah grammar (22 istilah)** — verb, noun, subject, object, infinitive, gerund, participle, clause, phrase, preposition, modal, auxiliary, tense, passive, subjunctive, comparative, agreement, countable/uncountable, antecedent. Tiap istilah: definisi + contoh kalimat Inggris + terjemahan Indonesia.
+2. **Teori per skill (30 skill)** — tiap skill punya: penjelasan konsep, daftar aturan, **contoh kalimat BENAR + terjemahan Indonesia**, dan pasangan **salah → benar** beserta alasannya.
+
+Total: 123 aturan, 72 contoh kalimat berterjemahan, 38 pasangan kesalahan.
+
+Saat drill dimulai, panel teori skill tersebut **otomatis terbuka di soal pertama**, lalu mengecil jadi satu baris di soal berikutnya — bisa dibuka lagi kapan saja tanpa keluar sesi. Di **mode simulasi ujian**, panel teori disembunyikan (kondisi tes asli).
+
+Cakupan skill:
 
 - **Grammar** — TOEFL ITP Level 1 Structure & Written Expression **Skill 1–60**, diringkas jadi 8 grup drill (SVA, preposition, clause, reduced clause, inversion, verb form, comparative/subjunctive, form & usage) — tiap grup **minimal 8 soal**
 - **Listening** — Part A (inference, suggestion, meaning/idiom, prediction, attitude) + Part B/C (main idea, detail)

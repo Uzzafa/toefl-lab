@@ -59,6 +59,8 @@
   /* ---------------- skill tagging ---------------- */
   var SK = window.SKILLS || [];
   var TAGS = window.SKILL_TAGS || {};
+  var GLOSS = window.GLOSSARY || [];
+  var LESSON = window.LESSONS || {};
   var POOL = [];
 
   function push(list, tags, factory) {
@@ -250,6 +252,49 @@
     }).join("") + "</div>";
   }
 
+  function lessonHtml(id, open) {
+    var L = LESSON[id];
+    if (!L) return "";
+    var meta = SK.filter(function (s) { return s.id === id; })[0] || {};
+    var h = '<details class="lesson"' + (open ? " open" : "") + ">" +
+      "<summary><b>Teori:</b> " + esc(meta.name || id) + (meta.ref ? ' <span class="lref">' + esc(meta.ref) + "</span>" : "") + "</summary>" +
+      '<div class="lesson-body">';
+    h += '<p class="lintro">' + esc(L.intro) + "</p>";
+    if (L.rules && L.rules.length) {
+      h += '<div class="lsec">Aturan</div><ul class="lrules">' +
+        L.rules.map(function (r) { return "<li>" + esc(r) + "</li>"; }).join("") + "</ul>";
+    }
+    if (L.examples && L.examples.length) {
+      h += '<div class="lsec">Contoh kalimat benar</div>';
+      L.examples.forEach(function (e) {
+        h += '<div class="lex"><div class="len">' + esc(e.en) + '</div><div class="lid">' + esc(e.id) + "</div></div>";
+      });
+    }
+    if (L.mistakes && L.mistakes.length) {
+      h += '<div class="lsec">Sering salah</div>';
+      L.mistakes.forEach(function (m) {
+        h += '<div class="lmis"><div class="lwrong">&#10007; ' + esc(m.wrong) + "</div>" +
+          '<div class="lright">&#10003; ' + esc(m.right) + "</div>" +
+          '<div class="lwhy">' + esc(m.why) + "</div></div>";
+      });
+    }
+    h += "</div></details>";
+    return h;
+  }
+
+  function glossaryHtml() {
+    if (!GLOSS.length) return "";
+    return '<details class="lesson"><summary><b>Kamus istilah grammar</b> — verb, infinitive, gerund, clause, dll (' + GLOSS.length + " istilah)</summary>" +
+      '<div class="lesson-body"><div class="glossgrid">' +
+      GLOSS.map(function (g) {
+        return '<div class="gitem"><div class="gterm">' + esc(g.t) + "</div>" +
+          '<div class="gdef">' + esc(g.d) + "</div>" +
+          '<div class="gen">' + esc(g.en) + "</div>" +
+          '<div class="gid">' + esc(g.id) + "</div>" +
+          (g.note ? '<div class="gnote">' + esc(g.note) + "</div>" : "") + "</div>";
+      }).join("") + "</div></div></details>";
+  }
+
   function renderHome() {
     var h = store().hist.slice(-5).reverse();
     var html = '<div class="hero"><h1>Siap latihan apa hari ini?</h1>' +
@@ -409,6 +454,7 @@
       '<div class="track"><i style="width:' + Math.round((S.idx / n) * 100) + '%"></i></div>';
 
     if (S.sim) h += '<div class="simnote">Mode ujian — benar/salah tidak ditampilkan sampai selesai. Jawaban masih bisa diganti sebelum tekan Lanjut.</div>';
+    if (!S.sim && it.skill) h += lessonHtml(it.skill, S.idx === 0);
 
     if (it.passage) {
       var pcls = it.doc ? "passage doc" : "passage";
@@ -1046,13 +1092,15 @@
     ]}
   ];
   function renderGuide() {
-    var h = '<div class="hero"><h1>Materi &amp; peta skill</h1>' +
-      "<p>Daftar lengkap apa yang diuji, dipetakan ke skill resmi ETS. Tiap baris bisa langsung di-drill.</p></div>";
+    var h = '<div class="hero"><h1>Materi &amp; teori</h1>' +
+      "<p>Teori dulu, baru soal. Tiap skill ada penjelasan, aturan, contoh kalimat benar + terjemahan Indonesia, dan kesalahan yang sering terjadi.</p></div>";
 
     h += '<div class="simnote" style="color:var(--tx2);background:var(--bg3);border-color:var(--line)">' +
       "Struktur daftar mengikuti <b>TOEFL ITP Level 1 — Structure &amp; Written Expression (Skill 1–60)</b> dan " +
       "<b>task type resmi iBT 2026</b>. Semua soal di app ini <b>ditulis sendiri</b> dan dipetakan ke skill tersebut — " +
       "bukan salinan soal ETS, karena bank soal resmi ber-copyright dan tidak boleh disebar ulang.</div>";
+
+    h += glossaryHtml();
 
     ["Grammar", "Listening", "Reading", "iBT 2026"].forEach(function (g) {
       var list = SK.filter(function (s) { return s.group === g; });
@@ -1062,15 +1110,11 @@
           : g === "Reading" ? "Reading · ITP"
             : "iBT 2026 · task type resmi";
       h += '<div class="sec-title">' + label + "</div>";
-      h += '<table class="skilltable"><tr><th>Skill</th><th>Ref</th><th>Bank</th><th></th></tr>';
       list.forEach(function (s) {
         var n = poolOf(s.id).length;
-        h += "<tr><td><b>" + esc(s.name) + "</b><div class='sdesc'>" + esc(s.desc) + "</div></td>" +
-          "<td class='ref'>" + esc(s.ref) + "</td>" +
-          "<td class='n'>" + (n || "—") + "</td>" +
-          "<td class='n'>" + (n ? '<button class="minibtn" data-skill="' + s.id + '">Drill</button>' : "") + "</td></tr>";
+        h += '<div class="lcard">' + lessonHtml(s.id, false) +
+          '<div class="lfoot"><button class="minibtn" data-skill="' + s.id + '">Drill ' + n + " soal</button></div></div>";
       });
-      h += "</table>";
     });
 
     h += '<div class="sec-title">Pola &amp; strategi</div>';
