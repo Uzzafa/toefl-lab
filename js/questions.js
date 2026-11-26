@@ -71,7 +71,7 @@ written: [
   {parts:[{l:"A",t:"The number of"},{l:"B",t:"accidents"},{l:"C",t:"have decreased"},{l:"D",t:"sharply this year."}], a:2,
    x:"'The number of' singular → has decreased."},
   {parts:[{l:"A",t:"I look forward"},{l:"B",t:"to meet"},{l:"C",t:"you"},{l:"D",t:"at the conference."}], a:1,
-   x:"'Look forward to + V-ing' → to meeting."},
+   x:"Di sini 'to' BUKAN penanda infinitive, tapi PREPOSISI (bagian dari 'look forward to'). Setelah preposisi wajib noun atau V-ing, tidak boleh bare infinitive. Jadi 'to meet' -> 'to meeting'. Bandingkan: 'I want to meet you' (infinitive, benar) vs 'I look forward to meeting you' (preposisi, wajib -ing). Pola sama: be used to working, object to changing, in addition to doing, accustomed to waking up early."},
   {parts:[{l:"A",t:"Despite of"},{l:"B",t:"the bad weather,"},{l:"C",t:"the flight"},{l:"D",t:"departed on time."}], a:0,
    x:"'Despite' tidak diikuti 'of'. Yang benar 'Despite the bad weather' atau 'In spite of the bad weather'."},
   {parts:[{l:"A",t:"The book"},{l:"B",t:"which"},{l:"C",t:"I borrowed it"},{l:"D",t:"from the library was overdue."}], a:2,
